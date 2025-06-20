@@ -34,7 +34,7 @@
             font-weight: bold;
         }
 
-        input {
+        input, select {
             width: 100%;
             padding: 8px;
             margin-top: 5px;
@@ -77,7 +77,9 @@
         <input type="number" id="bath" placeholder="e.g. 2">
 
         <label>Location</label>
-        <input type="text" id="location" placeholder="e.g. 1st phase jp nagar">
+        <select id="location">
+            <option disabled selected>Loading locations...</option>
+        </select>
 
         <button onclick="predictPrice()">Predict Price</button>
 
@@ -85,6 +87,30 @@
     </div>
 
     <script>
+        //  Fetch and fill location dropdown
+        async function loadLocations() {
+            const response = await fetch("http://127.0.0.1:5000/get_location_names");
+            const data = await response.json();
+            const locationSelect = document.getElementById("location");
+
+            // Clear previous and add default
+            locationSelect.innerHTML = "";
+            const defaultOption = document.createElement("option");
+            defaultOption.text = "Select a location";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            locationSelect.appendChild(defaultOption);
+
+            // Add locations from backend
+            data.locations.forEach(location => {
+                const option = document.createElement("option");
+                option.value = location;
+                option.textContent = location;
+                locationSelect.appendChild(option);
+            });
+        }
+
+        //  Send predict request to Flask backend
         async function predictPrice() {
             const sqft = document.getElementById("sqft").value;
             const bhk = document.getElementById("bhk").value;
@@ -106,7 +132,9 @@
             document.getElementById("predictionResult").innerText =
                 "Estimated Price: ₹ " + data.estimated_price + " Lakh";
         }
+
+        // Auto-call on page load
+        window.onload = loadLocations;
     </script>
 </body>
 </html>
-
